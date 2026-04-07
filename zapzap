@@ -1,0 +1,40 @@
+const { Client, LocalAuth } = require('whatsapp-web.js');
+const qrcode = require('qrcode-terminal');
+
+const client = new Client({
+  authStrategy: new LocalAuth()
+});
+
+const responded = new Map();
+
+client.on('qr', (qr) => {
+  qrcode.generate(qr, { small: true });
+});
+
+client.on('ready', () => {
+  console.log('Bot conectado com sucesso!');
+});
+
+client.on('message', async (message) => {
+  const now = new Date();
+  const hour = now.getHours();
+
+  if (hour >= 8 && hour < 18) {
+    const lastResponse = responded.get(message.from);
+    const currentTime = Date.now();
+
+    if (!lastResponse || currentTime - lastResponse > 10 * 60 * 1000) {
+      await message.reply(`Olá, agradeço o seu contato.
+
+No momento estou em horário de trabalho e atuo como técnico de atendimento na empresa E&L Produções de Software. Sua mensagem é muito importante e será respondida assim que possível.
+
+Agradeço pela compreensão.
+
+Atenciosamente.`);
+
+      responded.set(message.from, currentTime);
+    }
+  }
+});
+
+client.initialize();
